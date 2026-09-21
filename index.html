@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OmniAI Hub</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#09090f;color:#f5f5f7;font-family:Arial,sans-serif;height:100vh}
+.app{display:flex;height:100vh;overflow:hidden}
+.side{width:270px;background:#101017;border-left:1px solid #252532;padding:18px;display:flex;flex-direction:column}
+.logo{font-size:22px;font-weight:bold;margin-bottom:25px}
+.logo span{color:#8b5cf6}
+.new{width:100%;padding:13px;border:1px solid #343445;border-radius:12px;background:#171720;color:white;font-size:15px;cursor:pointer}
+.title{font-size:12px;color:#888;margin:25px 5px 10px}
+.models button{display:block;width:100%;padding:12px;margin:6px 0;text-align:right;border:0;border-radius:10px;background:transparent;color:#ccc;cursor:pointer}
+.models button:hover,.models .active{background:#211b36;color:white}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:65px;border-bottom:1px solid #252532;display:flex;align-items:center;padding:0 20px;justify-content:space-between}
+.model{background:#171720;border:1px solid #30303e;padding:9px 14px;border-radius:10px}
+.chat{flex:1;overflow:auto;padding:30px 16px}
+.welcome{max-width:800px;margin:80px auto;text-align:center}
+.welcome h1{font-size:38px;margin:0 0 12px}
+.welcome h1 span{color:#8b5cf6}
+.welcome p{color:#999;font-size:16px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:30px}
+.card{padding:16px;background:#111119;border:1px solid #292936;border-radius:14px;color:#ccc;text-align:right;cursor:pointer}
+.card:hover{border-color:#8b5cf6}
+.msg{max-width:850px;margin:15px auto;padding:15px;border-radius:14px;line-height:1.7}
+.user{background:#211b36}
+.ai{background:#12121a;border:1px solid #252532}
+.composer{padding:15px;max-width:900px;width:100%;margin:auto}
+.box{display:flex;gap:10px;background:#12121a;border:1px solid #30303e;border-radius:16px;padding:10px}
+textarea{flex:1;background:transparent;border:0;outline:0;color:white;resize:none;font-size:16px;min-height:45px;padding:10px}
+.send{width:48px;height:48px;border:0;border-radius:12px;background:#7c3aed;color:white;font-size:20px;cursor:pointer}
+.note{text-align:center;color:#666;font-size:11px;margin-top:8px}
+@media(max-width:700px){
+.side{display:none}.welcome{margin:50px auto}.welcome h1{font-size:29px}
+.cards{grid-template-columns:1fr}.top{padding:0 12px}.chat{padding:20px 10px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="side">
+<div class="logo">Omni<span>AI</span> Hub</div>
+<button class="new" onclick="newChat()">＋ محادثة جديدة</button>
+
+<div class="title">النماذج</div>
+<div class="models">
+<button class="active" onclick="setModel(this,'Auto')">⚡ Auto — الاختيار الذكي</button>
+<button onclick="setModel(this,'ChatGPT')">● ChatGPT</button>
+<button onclick="setModel(this,'Claude')">✦ Claude</button>
+<button onclick="setModel(this,'Gemini')">✦ Gemini</button>
+<button onclick="setModel(this,'DeepSeek')">◈ DeepSeek</button>
+</div>
+
+<div class="title">الحالة</div>
+<div style="color:#777;font-size:13px">● وضع العرض التجريبي</div>
+</aside>
+
+<main class="main">
+<header class="top">
+<div class="model" id="model">⚡ Auto</div>
+<div style="color:#777;font-size:13px">OmniAI Hub</div>
+</header>
+
+<section class="chat" id="chat">
+<div class="welcome" id="welcome">
+<h1>مرحباً بك في <span>OmniAI</span></h1>
+<p>منصة ذكاء اصطناعي تجمع نماذج متعددة في مكان واحد.</p>
+
+<div class="cards">
+<div class="card" onclick="ask('اكتب لي فكرة مشروع ذكاء اصطناعي')">💡 اقترح فكرة مشروع</div>
+<div class="card" onclick="ask('اشرح لي الذكاء الاصطناعي بطريقة بسيطة')">🧠 اشرح لي شيئاً</div>
+<div class="card" onclick="ask('اكتب لي كود HTML بسيط')">💻 ساعدني بالبرمجة</div>
+<div class="card" onclick="ask('حلل لي هذا الموضوع')">📊 حلل لي موضوعاً</div>
+</div>
+</div>
+</section>
+
+<div class="composer">
+<div class="box">
+<textarea id="input" placeholder="اكتب رسالتك هنا..." onkeydown="key(event)"></textarea>
+<button class="send" onclick="send()">➤</button>
+</div>
+<div class="note">OmniAI Hub • سيتم ربط نماذج الذكاء الاصطناعي لاحقاً</div>
+</div>
+</main>
+</div>
+
+<script>
+let current="Auto";
+
+function setModel(btn,name){
+document.querySelectorAll(".models button").forEach(x=>x.classList.remove("active"));
+btn.classList.add("active");
+current=name;
+document.getElementById("model").textContent="⚡ "+name;
+}
+
+function ask(text){
+document.getElementById("input").value=text;
+send();
+}
+
+function key(e){
+if(e.key==="Enter"&&!e.shiftKey){
+e.preventDefault();
+send();
+}
+}
+
+function send(){
+const input=document.getElementById("input");
+const text=input.value.trim();
+if(!text)return;
+
+document.getElementById("welcome")?.remove();
+
+const chat=document.getElementById("chat");
+
+const u=document.createElement("div");
+u.className="msg user";
+u.textContent=text;
+chat.appendChild(u);
+
+input.value="";
+
+const a=document.createElement("div");
+a.className="msg ai";
+a.innerHTML="⏳ <b>OmniAI</b><br>هذه نسخة تجريبية حالياً. سيتم ربط ChatGPT وClaude وGemini وDeepSeek وOmniRoute في المرحلة التالية.";
+chat.appendChild(a);
+
+chat.scrollTop=chat.scrollHeight;
+}
+
+function newChat(){
+location.reload();
+}
+</script>
+</body>
+</html>
