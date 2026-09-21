@@ -1,8 +1,4 @@
-const input = document.getElementById("input");
-const chat = document.getElementById("chat");
-const modelDisplay = document.getElementById("model");
-
-let selectedModel = "auto";
+let currentModel = "auto";
 
 function setModel(button, model) {
   document.querySelectorAll(".models button").forEach(btn => {
@@ -10,29 +6,47 @@ function setModel(button, model) {
   });
 
   button.classList.add("active");
-  selectedModel = model;
-  modelDisplay.textContent = "⚡ " + model;
-}
 
-function ask(text) {
-  input.value = text;
-  sendMessage();
-}
+  currentModel = model;
 
-function handleKey(event) {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
+  const modelBox = document.getElementById("model");
+
+  if (modelBox) {
+    modelBox.textContent = "⚡ " + model;
   }
 }
 
-async function sendMessage() {
+function ask(text) {
+  const input = document.getElementById("input");
+
+  if (!input) return;
+
+  input.value = text;
+  send();
+}
+
+function key(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    send();
+  }
+}
+
+async function send() {
+  const input = document.getElementById("input");
+  const chat = document.getElementById("chat");
+
+  if (!input || !chat) return;
+
   const text = input.value.trim();
 
   if (!text) return;
 
   const welcome = document.getElementById("welcome");
-  if (welcome) welcome.remove();
+
+  if (welcome) {
+    welcome.remove();
+  }
 
   addMessage(text, "user");
 
@@ -47,7 +61,7 @@ async function sendMessage() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: selectedModel,
+        model: currentModel,
         messages: [
           {
             role: "user",
@@ -68,22 +82,26 @@ async function sendMessage() {
     addMessage(answer, "ai");
 
   } catch (error) {
+
     loading.remove();
 
     addMessage(
-      "حدث خطأ في الاتصال بالخادم. سيتم إصلاح الربط في المرحلة التالية.",
+      "حدث خطأ في الاتصال بالخادم.",
       "ai"
     );
   }
 }
 
 function addMessage(text, type) {
+  const chat = document.getElementById("chat");
+
   const message = document.createElement("div");
 
   message.className = "msg " + type;
   message.textContent = text;
 
   chat.appendChild(message);
+
   chat.scrollTop = chat.scrollHeight;
 
   return message;
@@ -92,5 +110,3 @@ function addMessage(text, type) {
 function newChat() {
   location.reload();
 }
-
-input.addEventListener("keydown", handleKey);
